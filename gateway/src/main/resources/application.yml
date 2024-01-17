@@ -1,0 +1,55 @@
+spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8080/realms/realm-gateway/
+  cloud:
+    gateway:
+      default-filters:
+        - AddRequestHeader=X-Request-from, gateway-service
+        - TokenRelay=
+      routes:
+        - id: products-service
+          uri: lb://products-service
+          predicates:
+            - Path=/products
+          filters:
+              - AddResponseHeader=X-Response-generated-by, gateway
+        - id: checkout-service
+          uri: lb://checkout-service
+          predicates:
+            - Path=/checkout
+          filters:
+            - AddResponseHeader=X-Response-generated-by, gateway
+  application:
+    name: gateway-service
+
+server:
+  port: 9090
+
+eureka:
+  instance:
+    hostname: localhost
+    statusPageUrlPath: http://localhost:9090/actuator/info
+    healthCheckUrlPath: http://localhost:9090/actuator/health
+
+
+#actuator
+management:
+  endpoints:
+    web:
+      exposure:
+        include: info, health
+  info:
+    java:
+      enabled: true
+    os:
+      enabled: true
+    env:
+      enabled: true
+info:
+  app:
+    name: gateway-service
+    description: This gateway is responsible for redirecting each request to the corresponding MS
+    version: es la primer version perro
